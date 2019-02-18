@@ -1,0 +1,12 @@
+all:
+	gcc -o for for.c
+	gcc -o while while.c
+	gcc -o input input.c
+	gcc -o sleep sleep.c
+	gcc -o problem5c problem5c.c
+	gcc -o forker forker.c
+	gcc -o for1b for1b.c
+	gcc -o address.c address
+
+
+
