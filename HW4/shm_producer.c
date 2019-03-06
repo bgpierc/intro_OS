@@ -1,19 +1,6 @@
-/**
- * Simple program demonstrating shared memory in POSIX systems.
- *
- * This is the producer process that writes to the shared memory region.
- *
- * Figure 3.17
- *
- * @author Silberschatz, Galvin, and Gagne
- * Operating System Concepts  - Ninth Edition
- * Copyright John Wiley & Sons - 2013
- */
+
 #include <unistd.h>
 #include <sys/types.h>
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,6 +8,7 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+
 
 int main()
 {
@@ -30,6 +18,8 @@ int main()
 	const char *message1= "Operating Systems ";
 	const char *message2= "Is Fun!";
 
+	const char *questions[] = {"What is the number of this course? ","Who is the instructor? ","What is 2+2 "};
+	const char *anwsers[] = {"338","Chris","4"};
 	int shm_fd;
 	void *ptr;
 
@@ -42,21 +32,32 @@ int main()
 	/* now map the shared memory segment in the address space of the process */
 	ptr = mmap(0,SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 	if (ptr == MAP_FAILED) {
-		printf("Map failed\n");
-		return -1;
+	printf("Map failed\n");
+	return -1;
+}
+
+	for (int i = 0; i < 3; i++){
+		memcpy(ptr,questions[i],strlen(questions[i])+1);
+		puts("Waiting for response...");
+		sleep(10);
+		char *response = (char *)ptr;
+		printf("The user's anwser was: %s",response);
+		printf("The correct response is: %s",anwsers[i]);
+		if (strcmp(response,anwsers[i]) == 0){
+				char * correct = "That's right!";
+				memcpy(ptr,correct,strlen(correct)+1);
+				sleep(10);
+		}
+		else{
+				char response[80];
+				strcpy(response, "Wrong, the correct anwser was: ");
+				strcat(response,anwsers[i]);
+				memcpy(ptr,response,strlen(response)+1);
+				sleep(10);
+		}
+
 	}
 
-	/**
-	 * Now write to the shared memory region.
- 	 *
-	 * Note we must increment the value of ptr after each write.
-	 */
-	sprintf(ptr,"%s",message0);
-	ptr += strlen(message0);
-	sprintf(ptr,"%s",message1);
-	ptr += strlen(message1);
-	sprintf(ptr,"%s",message2);
-	ptr += strlen(message2);
 
 	return 0;
 }

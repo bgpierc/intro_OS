@@ -1,8 +1,5 @@
-#include <unistd.h>
-#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <fcntl.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
@@ -10,29 +7,32 @@
 
 int main()
 {
-	const int SIZE = 128;
 	const char *name = "OS";
-	const char *message0= "Studying ";
-	const char *message1= "Operating Systems ";
-	const char *message2= "Is Fun!";
-
+	const int SIZE = 4096;
 	int shm_fd;
 	void *ptr;
-	shm_fd = shm_open(name, O_CREAT | O_RDWR, 0666);
-	ftruncate(shm_fd,SIZE);
+	int i;
+	shm_fd = shm_open(name, O_RDWR, 0666);
+	if (shm_fd == -1) {
+		printf("shared memory failed\n");
+		exit(-1);
+	}
 	ptr = mmap(0,SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 	if (ptr == MAP_FAILED) {
 		printf("Map failed\n");
-		return -1;
+		exit(-1);
 	}
+		for (int i = 0; i < 3; i++){
+			puts(ptr); //question
+			char *response[80];
+			scanf("%s",response);
+			memcpy(ptr,response,strlen(response)+1);
+			sleep(10);
+			puts(ptr);//result
+			sleep(10);
+	}
+	printf("That's all folks! Thanks for playing!");
 
-	sprintf(ptr,"%s",message0);
-	ptr += strlen(message0);
-  sleep(10);
-	sprintf(ptr,"%s",message1);
-	ptr += strlen(message1);
-	sprintf(ptr,"%s",message2);
-	ptr += strlen(message2);
 
 	return 0;
 }
