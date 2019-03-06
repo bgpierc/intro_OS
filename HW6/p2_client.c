@@ -10,6 +10,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <semaphore.h>
+#include <fcntl.h> // for open
+
+
 
 // Helper function to conveniently print to stderr AND exit (terminate)
 void error(const char *msg) {
@@ -17,21 +21,17 @@ void error(const char *msg) {
     exit(0);
 }
 
+
 int main(int argc, char *argv[]) {
-    // Check for proper number of commandline arguments
-    // Expect program name in argv[0], IP address in argv[1], and port # in argv[2]
     if (argc < 3) {
        fprintf(stderr,"usage %s hostname port\n", argv[0]);
        exit(0);
     }
-
-    // Get socket
-    int portno = atoi(argv[2]);
+    int portno = atoi(argv[2]); //must be 8000 or 8001
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
         error("ERROR opening socket");
 
-    // Set up for connect()
     struct hostent *server;
     server = gethostbyname(argv[1]);
     if (server == NULL) {
@@ -43,29 +43,31 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_family = AF_INET;
     bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
     serv_addr.sin_port = htons(portno);
-    // Make connection
     if (connect(sockfd,(struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
         error("ERROR connecting");
 
-	// Play the game
-    char buffer[256];
-    bzero(buffer, sizeof(buffer));
+  char buffer[256];
+  bzero(buffer, sizeof(buffer));
 	int n; // number of bytes that were written/read
-    n = read(sockfd, buffer, sizeof(buffer));
-    if (n < 0)
-         error("ERROR reading from socket");
-    printf("%s\n", buffer);
-    bzero(buffer, sizeof(buffer));
-	gets(buffer);
-    n = write(sockfd, buffer, sizeof(buffer));
-    if (n < 0)
-         error("ERROR writing to socket");
-	printf("Waiting for result...\n");
-    bzero(buffer, sizeof(buffer));
-    n = read(sockfd, buffer, sizeof(buffer));
-    if (n < 0)
-         error("ERROR reading from socket");
-    printf("%s\n", buffer);
+  char *client_prompt = "Quit:0 Send message:1 ";
+  for(;;){
+    printf("%s",client_prompt);
+    char selection[5];
+    bzero(selection, sizeof(selection));
+    gets(selection);
+    if (selection[0] == '0'){
+      close(sockfd);
+      return 0;
+    }
+    else if (selection[0] == '1'){
+      printf("Enter Message: ");
+      gets(buffer);
+      n = write(sockfd,buffer,sizeof(buffer));
 
+    }
+    else{
+      printf("Undefined input\n");
+    }
+  }
 	return 0;
 }

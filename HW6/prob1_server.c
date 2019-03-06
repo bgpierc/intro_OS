@@ -58,7 +58,11 @@ int main(){
     if(response == 1){
       puts("Enter new message: ");
       sem_wait(sem);
-      scanf("%s",mess); //security thru prayer
+      char tmp[80];
+      gets(tmp);
+      gets(tmp);
+      sprintf(mess,tmp);
+      //scanf("%s",mess); //security thru prayer
       sem_post(sem);
     }
     else if (response == 2){

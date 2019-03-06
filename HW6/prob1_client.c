@@ -49,7 +49,12 @@ int main(){
     if(response == 1){
       sem_wait(sem);
       puts("Enter new message: ");
-      scanf("%s",mess); //yes lets allow the user to write arbitrary data directly to memory
+      char tmp[80];
+      gets(tmp);
+      gets(tmp);
+      sprintf(mess,tmp);
+
+      //scanf("%s",mess); //yes lets allow the user to write arbitrary data directly to memory
       sem_post(sem);
     }
     else if (response == 2){
