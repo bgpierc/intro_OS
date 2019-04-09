@@ -1,0 +1,14 @@
+#!/bin/bash
+if [ $# -lt 1 ] ; then #Check there is enough command line parameters.
+      echo "Need result file name" 1>&2
+      exit 1
+fi
+gcc -o page_fault page_fault.c -w
+rm -f $1
+touch $1
+echo N:minor page faults >>$1
+for i in {0..2000..100}
+  do
+    echo -n $i':'>>$1
+    /usr/bin/time -f'%R' --quiet ./page_fault $i 2>>$1
+done
